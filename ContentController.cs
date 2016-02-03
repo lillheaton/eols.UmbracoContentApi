@@ -1,5 +1,5 @@
 ﻿using System.Web.Http;
-
+using Newtonsoft.Json;
 using Umbraco.Web.WebApi;
 
 namespace EOls.UmbracoContentApi
@@ -8,7 +8,15 @@ namespace EOls.UmbracoContentApi
     {
         public IHttpActionResult Get(int id)
         {
-            return null;
+            var content = Umbraco.TypedContent(id);
+            if (content == null)
+            {
+                return BadRequest("No content with that ID");
+            }
+
+            return Json(
+                ContentSerializer.Instance.Serialize(content),
+                new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
         }
     }
 }
