@@ -6,13 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("EOls.UmbracoContentApi")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("LBi Sverige AB")]
+[assembly: AssemblyDescription("A generic content api for the Umbraco platform. The nuget comes with a standard set of \"property converters\" but this converters can be overridden and handled differently to suit your needs (make usage of CDN for example)")]
 [assembly: AssemblyProduct("EOls.UmbracoContentApi")]
-[assembly: AssemblyCopyright("Copyright © LBi Sverige AB 2016")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyCulture("")]
+[assembly: AssemblyCompany("Emil Olsson")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
