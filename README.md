@@ -3,15 +3,15 @@ A generic content api for the Umbraco platform. The nuget comes with a standard 
 
 Follows the same output structure as [EPiServer Content Api](https://github.com/lillheaton/eols.EPiContentApi)
 
-###Installation
+### Installation
 
     PM> Install-Package EOls.UmbracoContentApi
 
-###Usage
+### Usage
 
-    [GET] /umbraco/api/content/{id}
+    [GET] /umbraco/api/content/get/{id}
 
-###Custom Property Converters
+### Custom Property Converters
 By using the IApiPropertyConverter interface and the PropertyTypeAttribute you will be able to convert the property to suit your needs.
 
 ```C#

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>EOls.UmbracoContentApi.csproj</id>
+    <title>Umbraco Content API</title>
+    <version>0.0.0</version>
+    <authors>Emil Olsson</authors>
+    <owners>Emil Olsson</owners>
+    <projectUrl>https://github.com/lillheaton/eols.UmbracoContentApi</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A generic content api for the Umbraco platform. 
+    The nuget comes with a standard set of "property converters" but this converters can be overridden and handled differently to suit your needs 
+    (make usage of CDN for example)</description>
+    <tags>Umbraco API ContentApi Generic</tags>
+    <dependencies>
+      <dependency id="UmbracoCms.Core" version="7.1.9" />
+    </dependencies>
+  </metadata>
+</package>
