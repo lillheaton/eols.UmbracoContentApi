@@ -7,7 +7,6 @@ namespace EOls.UmbracoContentApi
         protected override void ApplicationInitialized(UmbracoApplicationBase umbracoApplication, ApplicationContext applicationContext)
         {
             base.ApplicationInitialized(umbracoApplication, applicationContext);
-            SerializerManager.Initialize();
         }
     }
 }

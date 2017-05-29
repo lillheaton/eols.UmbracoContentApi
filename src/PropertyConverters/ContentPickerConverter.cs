@@ -11,7 +11,14 @@ namespace EOls.UmbracoContentApi.PropertyConverters
     {
         public object Convert(IPublishedProperty property, IPublishedContent owner, ContentSerializer serializer, UmbracoHelper umbraco)
         {
-            return serializer.Serialize(umbraco.TypedContent(property.Value));
+            if (property.Value is IPublishedContent)
+                return serializer.Serialize(property.Value as IPublishedContent);
+
+            IPublishedContent content = umbraco.TypedContent(property.Value);
+            if (content == null)
+                return null;
+
+            return serializer.Serialize(content);
         }
     }
 }

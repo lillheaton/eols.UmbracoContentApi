@@ -1,6 +1,7 @@
 ﻿using EOls.UmbracoContentApi.Attributes;
 using EOls.UmbracoContentApi.Interfaces;
 using EOls.UmbracoContentApi.PropertyConverters;
+using EOls.UmbracoContentApi.Util;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
@@ -10,51 +11,75 @@ namespace EOls.UmbracoContentApi
 {
     public static class SerializerManager
     {
+        private static Dictionary<string, IApiPropertyConverter> _propertyConverters;
+        private static Dictionary<string, IDocumentTypeExtender> _extenders;
+
         public static IContractResolver ContractResolver { get; set; }
-        public static Dictionary<string, IApiPropertyConverter> PropertyConverters { get; private set; }
-        public static Dictionary<string, IDocumentTypeExtender> Extenders { get; private set; }        
-
-        private static void AddPrebuiltConverters()
+        public static Dictionary<string, IApiPropertyConverter> PropertyConverters
         {
-            AddConverter(new ContentPickerConverter());
-            AddConverter(new RichTextEditorConverter());
+            get { return _propertyConverters = (_propertyConverters == null ? SetupPropertyConverters() : _propertyConverters); }
+        }
+        public static Dictionary<string, IDocumentTypeExtender> Extenders
+        {
+            get { return _extenders = (_extenders == null ? SetupDocumentExtenders() : _extenders); }
         }
 
-        public static void Initialize()
+        static SerializerManager()
         {
-            // Set Default to camelcase
-            ContractResolver = new CamelCasePropertyNamesContractResolver();
-
-            PropertyConverters = PropertyConverters ?? new Dictionary<string, IApiPropertyConverter>();
-            Extenders = Extenders ?? new Dictionary<string, IDocumentTypeExtender>();
-
-            AddPrebuiltConverters();
+            ContractResolver = GetDefaultContractResolver();
+            _propertyConverters = SetupPropertyConverters();
+            _extenders = SetupDocumentExtenders();
         }
 
-        public static void AddConverter(IApiPropertyConverter converter)
+        private static IContractResolver GetDefaultContractResolver()
         {
-            if (PropertyConverters == null)
-                Initialize();
-
-            var attribute = converter.GetType().GetCustomAttributes(false).First(a => a is PropertyTypeAttribute) as PropertyTypeAttribute;
-            if (attribute == null)
-                throw new Exception("Converter needs to have the PropertyTypeAttribute");
-
-            if (PropertyConverters.Any(s => s.Key == attribute.Type))
-                return;
-
-            PropertyConverters.Add(attribute.Type, converter);
+            return new CamelCasePropertyNamesContractResolver();
         }
 
-        public static void AddExtender(IDocumentTypeExtender extender)
+        private static Dictionary<string, IApiPropertyConverter> InstantiateConverter(Type[] ConverterTypes)
         {
-            if (Extenders == null)
-                Initialize();
+            return ConverterTypes.Select(s =>
+            {
+                var attr = s.GetCustomAttributes(typeof(PropertyTypeAttribute), false).FirstOrDefault() as PropertyTypeAttribute;
+                if(attr == null)
+                    throw new Exception("Converter needs to have the PropertyTypeAttribute");
 
-            if (Extenders.Any(s => s.Key == extender.GetType().Name))
-                return;
+                return new KeyValuePair<string, IApiPropertyConverter>(attr.Type.ToLowerInvariant(), Activator.CreateInstance(s) as IApiPropertyConverter);
+            }).ToDictionary(s => s.Key, s => s.Value);
+        }
 
-            Extenders.Add(extender.GetType().Name, extender);
+        private static Dictionary<string, IApiPropertyConverter> SetupPropertyConverters()
+        {
+            // EOls.UmbracoContentApi IApiPropertyConverter types
+            Type[] localTypes =
+                ReflectionHelper.GetAssemblyClassesInheritInterface<IApiPropertyConverter>(typeof(SerializerManager).Assembly);
+
+            // All assemblies except EOls.UmbracoContentApi
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(s => s != typeof(SerializerManager).Assembly).ToArray(); 
+
+            // All namespace IApiPropertyConverter types
+            Type[] currentDomainTypes = ReflectionHelper.GetAssemblyClassesInheritInterface<IApiPropertyConverter>(assemblies);
+
+            Dictionary<string, IApiPropertyConverter> localConverters = InstantiateConverter(localTypes);
+            Dictionary<string, IApiPropertyConverter> currentDomainConverters = InstantiateConverter(currentDomainTypes);
+
+            // Allow users to override EOls.UmbracoContentApi converters
+            return 
+                currentDomainConverters
+                .Concat(
+                    localConverters
+                    .Where(s => !currentDomainConverters.ContainsKey(s.Key)))
+                .ToDictionary(s => s.Key, s => s.Value);
+        }
+
+        private static Dictionary<string, IDocumentTypeExtender> SetupDocumentExtenders()
+        {
+            Type[] types = ReflectionHelper.GetAssemblyClassesInheritInterface<IDocumentTypeExtender>();
+
+            return 
+                types
+                .Select(s => new KeyValuePair<string, IDocumentTypeExtender>(s.Name.ToLowerInvariant(), Activator.CreateInstance(s) as IDocumentTypeExtender))
+                .ToDictionary(s => s.Key, s => s.Value);
         }
     }
 }

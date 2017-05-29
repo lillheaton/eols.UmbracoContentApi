@@ -14,11 +14,13 @@ Follows the same output structure as [EPiServer Content Api](https://github.com/
 ### Custom Property Converters
 By using the IApiPropertyConverter interface and the PropertyTypeAttribute you will be able to convert the property to suit your needs.
 
+Both the "property converters" and "document extender" will be located with reflecting your code.
+
 ```C#
 [PropertyType(Type = "Umbraco.TinyMCEv3")]
 public class RichTextEditorConverter : IApiPropertyConverter
 {
-    public object Convert(IPublishedProperty property, IPublishedContent owner)
+    public object Convert(IPublishedProperty property, IPublishedContent owner, ContentSerializer serializer, UmbracoHelper umbraco)
     {
         var htmlString = property.Value as HtmlString;
         return htmlString != null ? htmlString.ToHtmlString() : string.Empty;
@@ -27,11 +29,11 @@ public class RichTextEditorConverter : IApiPropertyConverter
 ```
 
 ### Extend Document Type
-Let's say you have a document type named UmbHomePage. You will be albe to extend this model by creating a class with the IDocumentTypeExtender interface.
-When the api print content with that document type. It will also include the dictionary exampled below.
+Let's say you have a document type named Home. You will be albe to extend this document by creating a class with the IDocumentTypeExtender interface.
+When the api return content with this document type. It will include the dictionary exampled below.
 
 ```C#
-public class UmbHomePageModel : IDocumentTypeExtender
+public class HomeDocument : IDocumentTypeExtender
 {
     public Dictionary<string, object> Extend(IPublishedContent content)
     {
@@ -39,8 +41,3 @@ public class UmbHomePageModel : IDocumentTypeExtender
     }
 }
 ```
-
-#### In the future:
- * Maybe add a caching layer (not sure if needed)
- * More documentation
- * Unit tests!

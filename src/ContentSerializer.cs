@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EOls.UmbracoContentApi.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,27 +21,30 @@ namespace EOls.UmbracoContentApi
         public object Serialize(IPublishedContent content)
         {
             return new
-                   {
-                       ContentId = content.Id,
-                       Name = content.Name,
-                       Url = content.Url,
-                       ContentTypeId = content.DocumentTypeId,
-                       ContentTypeAlias = content.DocumentTypeAlias,
-                       Content = ConvertContent(content)
-                   };
+            {
+                ContentId = content.Id,
+                Name = content.Name,
+                Url = content.Url,
+                ContentTypeId = content.DocumentTypeId,
+                ContentTypeAlias = content.DocumentTypeAlias,
+                Content = ConvertContent(content)
+            };
         }
 
-        private Dictionary<string, object> ConvertContent(IPublishedContent content)
+        public Dictionary<string, object> ConvertContent(IPublishedContent content)
         {
             Dictionary<string, object> extendedContent = new Dictionary<string, object>();
-            
+
             // Document extenders located and used to extend the model
-            if (SerializerManager.Extenders.Any(s => s.Key.StartsWith(content.DocumentTypeAlias, StringComparison.InvariantCultureIgnoreCase)))
+            var extender = 
+                    SerializerManager.Extenders
+                    .Where(s => s.Key.StartsWith(content.DocumentTypeAlias, StringComparison.InvariantCultureIgnoreCase))
+                    .Select(s => s as KeyValuePair<string, IDocumentTypeExtender>?)
+                    .FirstOrDefault();
+
+            if (extender != null)
             {
-                extendedContent =
-                    SerializerManager.Extenders.First(
-                        s => s.Key.StartsWith(content.DocumentTypeAlias, StringComparison.InvariantCultureIgnoreCase))
-                        .Value.Extend(content, this, this._umbraco);
+                extendedContent = extender.Value.Value.Extend(content, this, this._umbraco);
             }
 
             // Continue and convert all the properties and Union the extended dictionary
@@ -54,8 +58,8 @@ namespace EOls.UmbracoContentApi
 
         private object ConvertProperty(IPublishedProperty property, IPublishedContent owner, PublishedContentType contentType)
         {
-            string editorAlias = contentType.GetPropertyType(property.PropertyTypeAlias).PropertyEditorAlias;
-            
+            string editorAlias = contentType.GetPropertyType(property.PropertyTypeAlias).PropertyEditorAlias.ToLowerInvariant();
+
             // Property converter exist
             if (SerializerManager.PropertyConverters.ContainsKey(editorAlias))
             {
