@@ -41,3 +41,11 @@ public class HomeDocument : IDocumentTypeExtender
     }
 }
 ```
+
+### Hide Document
+Document type with alias "settings"
+
+```C#
+[DocumentTypeSettingsAttribute(Hide = true)]
+public class SettingsModel { }
+```

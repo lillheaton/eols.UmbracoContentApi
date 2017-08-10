@@ -18,42 +18,23 @@ namespace EOls.UmbracoContentApi
             this._umbraco = umbraco;
         }
 
-        public object Serialize(IPublishedContent content)
+        private static bool KeyStartsWith<T>(KeyValuePair<string, T> pair, string s) => pair.Key.StartsWith(s, StringComparison.InvariantCultureIgnoreCase);
+        
+        private static bool ShouldHideDocument(IPublishedContent content)
         {
-            return new
-            {
-                ContentId = content.Id,
-                Name = content.Name,
-                Url = content.Url,
-                ContentTypeId = content.DocumentTypeId,
-                ContentTypeAlias = content.DocumentTypeAlias,
-                Content = ConvertContent(content)
-            };
+            // Check if there is any settings for the specific document type
+            var docTypeSettings = SerializerManager.DocumentSettings.GetValueOrDefault(x => KeyStartsWith(x, content.DocumentTypeAlias));
+            return docTypeSettings != null && docTypeSettings.Hide;
         }
-
-        public Dictionary<string, object> ConvertContent(IPublishedContent content)
+        
+        private Dictionary<string, object> ExtendedContent(IPublishedContent content)
         {
-            Dictionary<string, object> extendedContent = new Dictionary<string, object>();
+            IDocumentTypeExtender docExtender = SerializerManager.Extenders.GetValueOrDefault(x => KeyStartsWith(x, content.DocumentTypeAlias));
 
-            // Document extenders located and used to extend the model
-            var extender = 
-                    SerializerManager.Extenders
-                    .Where(s => s.Key.StartsWith(content.DocumentTypeAlias, StringComparison.InvariantCultureIgnoreCase))
-                    .Select(s => s as KeyValuePair<string, IDocumentTypeExtender>?)
-                    .FirstOrDefault();
+            if (docExtender != null)
+                return docExtender.Extend(content, this, this._umbraco);
 
-            if (extender != null)
-            {
-                extendedContent = extender.Value.Value.Extend(content, this, this._umbraco);
-            }
-
-            // Continue and convert all the properties and Union the extended dictionary
-            return
-                content.Properties.ToDictionary(
-                    s => s.PropertyTypeAlias,
-                    s => ConvertProperty(s, content, content.ContentType))
-                    .Union(extendedContent)
-                    .ToDictionary(s => s.Key, s => s.Value);
+            return new Dictionary<string, object>();
         }
 
         private object ConvertProperty(IPublishedProperty property, IPublishedContent owner, PublishedContentType contentType)
@@ -67,6 +48,39 @@ namespace EOls.UmbracoContentApi
             }
 
             return property.Value;
+        }
+
+
+        public object Serialize(IPublishedContent content)
+        {
+            if (ShouldHideDocument(content))
+                return null;
+
+            return new
+            {
+                ContentId = content.Id,
+                Name = content.Name,
+                Url = content.Url,
+                ContentTypeId = content.DocumentTypeId,
+                ContentTypeAlias = content.DocumentTypeAlias,
+                Content = ConvertContent(content)
+            };
+        }
+
+        public Dictionary<string, object> ConvertContent(IPublishedContent content)
+        {
+            if (ShouldHideDocument(content))
+                return null;
+
+            // Continue and convert all the properties and Union the extended dictionary
+            return
+                content
+                    .Properties
+                    .ToDictionary(
+                        s => s.PropertyTypeAlias,
+                        s => ConvertProperty(s, content, content.ContentType))
+                    .Union(ExtendedContent(content))
+                    .ToDictionary(s => s.Key, s => s.Value);
         }
     }
 }

@@ -271,16 +271,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\DocumentTypeSettingsAttribute.cs" />
     <Compile Include="Attributes\PropertyTypeAttribute.cs" />
     <Compile Include="ContentController.cs" />
     <Compile Include="ContentSerializer.cs" />
-    <Compile Include="EventsHandler.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Interfaces\IApiPropertyConverter.cs" />
     <Compile Include="Interfaces\IDocumentTypeExtender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyConverters\ContentPickerConverter.cs" />
+    <Compile Include="PropertyConverters\MediaPicker2Converter.cs" />
     <Compile Include="PropertyConverters\RichTextEditorConverter.cs" />
     <Compile Include="SerializerManager.cs" />
+    <Compile Include="Setup\DocumentTypeExtenders.cs" />
+    <Compile Include="Setup\PropertyConverters.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />
   </ItemGroup>
   <ItemGroup>
