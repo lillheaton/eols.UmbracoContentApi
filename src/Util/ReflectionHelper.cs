@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Umbraco.Core;
 
 namespace EOls.UmbracoContentApi.Util
 {
@@ -15,10 +16,19 @@ namespace EOls.UmbracoContentApi.Util
         /// <returns></returns>
         public static IEnumerable<Type> GetAssemblyClassesInheritInterface<T>(Assembly assembly)
         {
-            return
-                assembly
-                .GetTypes()
-                .Where(x => x.IsClass && typeof(T).IsAssignableFrom(x));
+            try
+            {
+                return
+                    assembly
+                        .GetTypes()
+                        .Where(x => x.IsClass && typeof(T).IsAssignableFrom(x));
+
+            }
+            catch
+            {
+                return Enumerable.Empty<Type>();
+            }
+            
         }
 
         /// <summary>
@@ -51,10 +61,18 @@ namespace EOls.UmbracoContentApi.Util
         /// <returns></returns>
         public static IEnumerable<Type> GetAssemblyClassesInheritAttribute<T>(Assembly assembly)
         {
-            return 
-                assembly
-                .GetTypes()
-                .Where(x => x.IsClass && x.GetCustomAttributes(typeof(T)).Any());
+            try
+            {
+                return
+                    assembly
+                        .GetTypes()
+                        .Where(x => x.IsClass && x.GetCustomAttributes(typeof(T)).Any());
+            }
+            catch
+            {
+                return Enumerable.Empty<Type>();
+            }
+            
         }
         /// <summary>
         /// Get all classes that inherit attribute T in all currentDomainAssemblies
