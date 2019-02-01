@@ -1,5 +1,7 @@
 # Umbraco Content Api
 A generic content api for Umbraco CMS. <br>Serializes the content in Umbraco to Json. It's possible to adapt how a specific Umbraco property gets serialized by adding custom "Property converter". The nuget package include a set of standard property converters.
+<br><br>
+Latest known version of Umbraco that this nuget have been successfully tested with: **v7.7.7**
 
 
 ### Installation
@@ -59,3 +61,4 @@ Hide document type named "Settings"
 [DocumentTypeSettingsAttribute(Hide = true)]
 public class SettingsDocument { }
 ```
+
