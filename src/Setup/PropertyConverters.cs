@@ -29,20 +29,20 @@ namespace EOls.UmbracoContentApi.Setup
             // EOls.UmbracoContentApi IApiPropertyConverter 
             IEnumerable<KeyValuePair<string, IApiPropertyConverter>> localAssemblyTypes = 
                 AssemblyPropertyConverters(s => s == typeof(PropertyConverters).Assembly)
-                .Select(Instantiate);
+                    .Select(Instantiate).ToArray();
 
             // All namespace IApiPropertyConverter except EOls.UmbracoContentApi
             IEnumerable<KeyValuePair<string, IApiPropertyConverter>> assembliesTypes = 
                 AssemblyPropertyConverters(s => s != typeof(PropertyConverters).Assembly)
-                .Select(Instantiate);
-
-            Func<KeyValuePair<string, IApiPropertyConverter>, bool> isNotPartOfAssembliesTypes = x => assembliesTypes.Any(y => y.Key != x.Key);
+                    .Select(Instantiate).ToArray();
+            
+            Func<KeyValuePair<string, IApiPropertyConverter>, bool> isNotPartOfAssembliesTypes = x => !assembliesTypes.Any(y => y.Key == x.Key);
 
             return 
                 assembliesTypes
-                .Union(
-                    localAssemblyTypes.Where(isNotPartOfAssembliesTypes)
-                ).ToDictionary(x => x.Key, x => x.Value);
+                    .Concat(
+                        localAssemblyTypes.Where(isNotPartOfAssembliesTypes)
+                    ).ToDictionary(x => x.Key, x => x.Value);
         }
     }
 }
