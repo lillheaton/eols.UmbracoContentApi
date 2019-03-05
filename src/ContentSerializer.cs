@@ -26,7 +26,13 @@ namespace EOls.UmbracoContentApi
             var docTypeSettings = SerializerManager.DocumentSettings.GetValueOrDefault(x => KeyStartsWith(x, content.DocumentTypeAlias));
             return docTypeSettings != null && docTypeSettings.Hide;
         }
-        
+
+        private static bool ShouldHideProperty(IPublishedContent content, IPublishedProperty property)
+        {
+            var docTypeSettings = SerializerManager.DocumentSettings.GetValueOrDefault(x => KeyStartsWith(x, content.DocumentTypeAlias));
+            return docTypeSettings != null && docTypeSettings.HideProperties.Contains(property.PropertyTypeAlias);
+        }
+
         private Dictionary<string, object> ExtendedContent(IPublishedContent content)
         {
             IDocumentTypeExtender docExtender = SerializerManager.Extenders.GetValueOrDefault(x => KeyStartsWith(x, content.DocumentTypeAlias));
@@ -76,6 +82,7 @@ namespace EOls.UmbracoContentApi
             return
                 content
                     .Properties
+                    .Where(p => !ShouldHideProperty(content, p))
                     .ToDictionary(
                         s => s.PropertyTypeAlias,
                         s => ConvertProperty(s, content, content.ContentType))
