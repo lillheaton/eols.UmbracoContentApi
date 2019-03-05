@@ -32,33 +32,40 @@ public class RichTextEditorConverter : IApiPropertyConverter
     }
 }
 ```
+<br>
 
-
-### Extend Document Type
+### Extend document Type
 It's possible to extend a document type by creating a class with the IDocumentTypeExtender interface.
 When the api returns content with this document type, it will include the additional data.
 
 #### Example
-Let's say you have a document type named "Home". For this specific document type you also want to return a dictionary with som additional data.
+Let's say you have a document type named "Home". For this specific document type you also want to return some additional data.
 
 ```C#
 public class HomeDocument : IDocumentTypeExtender
 {
-    public Dictionary<string, object> Extend(IPublishedContent content)
+    public Dictionary<string, object> Extend(IPublishedContent content, ContentSerializer serializer, UmbracoHelper umbra)
     {
         return new Dictionary<string, object>() { { "Foo", "Bar" } };
     }
 }
 ```
+<br>
 
-
-### Hide Document
-If you don't want pages of a specific document type to be returned by the API.<br>
+### Hide document or properties
+It's possible to "hide" a specific property, or the entire document type, from being returned by the API. <br>
 #### Example
 Hide document type named "Settings"
 
 ```C#
 [DocumentTypeSettingsAttribute(Hide = true)]
+public class SettingsDocument { }
+```
+<br>
+Hide properties "myNonPublicProperty" and "myOtherProperty" on document type "Settings"
+
+```C#
+[DocumentTypeSettingsAttribute(HideProperties = new[]{"myNonPublicProperty","myOtherProperty"}))]
 public class SettingsDocument { }
 ```
 
