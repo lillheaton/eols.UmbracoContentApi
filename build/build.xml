@@ -20,7 +20,7 @@
   
   <PropertyGroup>
     <VersionMajor>3</VersionMajor>
-    <VersionMinor>3</VersionMinor>
+    <VersionMinor>4</VersionMinor>
     <VersionPatch>0</VersionPatch>
     <VersionSuffix></VersionSuffix>
   </PropertyGroup>
