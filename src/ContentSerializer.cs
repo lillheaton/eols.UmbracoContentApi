@@ -83,6 +83,7 @@ namespace EOls.UmbracoContentApi
                 content
                     .Properties
                     .Where(p => !ShouldHideProperty(content, p))
+                    .OrderBy(p => p.PropertyTypeAlias)
                     .ToDictionary(
                         s => s.PropertyTypeAlias,
                         s => ConvertProperty(s, content, content.ContentType))
